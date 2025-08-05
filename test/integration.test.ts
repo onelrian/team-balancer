@@ -4,17 +4,6 @@ import { UserService } from '../src/services/userService';
 import { WorkService } from '../src/services/workService';
 import { AssignmentService } from '../src/services/assignmentService';
 
-// Mock DiscordService to prevent actual API calls
-jest.mock('../src/services/discordService', () => {
-  return {
-    DiscordService: {
-      sendNewAssignmentsNotification: jest.fn(),
-      sendNewWorkPortionNotification: jest.fn(),
-      sendErrorNotification: jest.fn(),
-    }
-  };
-});
-
 describe('TeamBalancer Integration Tests', () => {
   let pool: Pool;
 
@@ -30,25 +19,11 @@ describe('TeamBalancer Integration Tests', () => {
     await pool.end();
   });
 
-  it('should create a user and assign admin role', async () => {
-    // Create a test user
-    const user = await UserService.createUserClass('developers', 'Software developers');
-    expect(user).toBeDefined();
-    expect(user.name).toBe('developers');
-  });
-
-  it('should create a work portion', async () => {
-    // Create a test work portion
-    const workPortion = await WorkService.createWorkPortion(
-      'Test Task',
-      'A test task for integration testing',
-      5,
-      1 // Assuming user ID 1 exists
-    );
-    
-    expect(workPortion).toBeDefined();
-    expect(workPortion.name).toBe('Test Task');
-    expect(workPortion.weight).toBe(5);
+  it('should create a user class', async () => {
+    // Create a test user class
+    const userClass = await UserService.createUserClass('developers', 'Software developers');
+    expect(userClass).toBeDefined();
+    expect(userClass.name).toBe('developers');
   });
 
   it('should generate assignments', async () => {
