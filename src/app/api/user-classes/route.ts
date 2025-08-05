@@ -1,16 +1,15 @@
 import { NextRequest } from 'next/server';
-import { isAdmin } from '@/lib/middleware';
+import { getToken } from 'next-auth/jwt';
 import { UserService } from '@/services/userService';
 
 // GET /api/user-classes - Get all user classes
 export async function GET(request: NextRequest) {
   try {
-    // Check if user is admin
-    const adminCheck = await isAdmin(request);
-    if (!adminCheck) {
+    const token = await getToken({ req: request });
+    if (!token) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized: Admin access required' }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
@@ -32,9 +31,8 @@ export async function GET(request: NextRequest) {
 // POST /api/user-classes - Create a new user class (admin only)
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is admin
-    const adminCheck = await isAdmin(request);
-    if (!adminCheck) {
+    const token = await getToken({ req: request });
+    if (!token || token.role !== 'admin') {
       return new Response(
         JSON.stringify({ error: 'Unauthorized: Admin access required' }),
         { status: 403, headers: { 'Content-Type': 'application/json' } }
@@ -51,10 +49,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const newUserClass = await UserService.createUserClass(name, description);
+    const userClass = await UserService.createUserClass(name, description);
     
     return new Response(
-      JSON.stringify(newUserClass),
+      JSON.stringify(userClass),
       { status: 201, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
