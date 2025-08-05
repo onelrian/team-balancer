@@ -1,13 +1,12 @@
 import { NextRequest } from 'next/server';
-import { isAdmin } from '@/lib/middleware';
+import { getToken } from 'next-auth/jwt';
 import { UserService } from '@/services/userService';
 
 // PUT /api/users/[id]/role - Update user role (admin only)
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    // Check if user is admin
-    const adminCheck = await isAdmin(request);
-    if (!adminCheck) {
+    const token = await getToken({ req: request });
+    if (!token || token.role !== 'admin') {
       return new Response(
         JSON.stringify({ error: 'Unauthorized: Admin access required' }),
         { status: 403, headers: { 'Content-Type': 'application/json' } }
@@ -16,33 +15,25 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const { role } = await request.json();
     
-    // Validate role
-    if (role !== 'admin' && role !== 'user') {
+    // Validate input
+    if (!role || (role !== 'admin' && role !== 'user')) {
       return new Response(
-        JSON.stringify({ error: 'Invalid role. Must be "admin" or "user"' }),
+        JSON.stringify({ error: 'role must be either "admin" or "user"' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    const userId = parseInt(params.id);
-    if (isNaN(userId)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid user ID' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const updatedUser = await UserService.updateUserRole(userId, role);
+    const user = await UserService.updateUserRole(parseInt(params.id), role);
     
-    if (!updatedUser) {
+    if (!user) {
       return new Response(
         JSON.stringify({ error: 'User not found' }),
         { status: 404, headers: { 'Content-Type': 'application/json' } }
       );
     }
-
+    
     return new Response(
-      JSON.stringify(updatedUser),
+      JSON.stringify(user),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
