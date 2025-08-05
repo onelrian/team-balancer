@@ -44,19 +44,15 @@ export function useWorkloadPreferences() {
       
       const newPreference: WorkloadPreference = await response.json();
       
-      // Update the preferences state
+      // Update the preferences list
       setPreferences(prev => {
-        const existingIndex = prev.findIndex(
-          p => p.userId === newPreference.userId && p.workPortionId === newPreference.workPortionId
-        );
-        
+        const existingIndex = prev.findIndex(p => p.workPortionId === workPortionId);
         if (existingIndex >= 0) {
           const updated = [...prev];
           updated[existingIndex] = newPreference;
           return updated;
-        } else {
-          return [...prev, newPreference];
         }
+        return [...prev, newPreference];
       });
       
       return newPreference;
