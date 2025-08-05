@@ -37,7 +37,7 @@ jobs:
         run: |
           sudo apt-get install -y postgresql-client
           # Connect to database and run any necessary migrations
-          # psql $DATABASE_URL -f ./docker/init.sql
+          psql $DATABASE_URL -f ./docker/init.sql
 
       - name: Generate workload distribution
         run: |
