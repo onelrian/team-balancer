@@ -1,14 +1,12 @@
 import { NextRequest } from 'next/server';
-import { query } from '@/lib/db';
+import { getToken } from 'next-auth/jwt';
 import { UserService } from '@/services/userService';
-import { isAdmin } from '@/lib/middleware';
 
 // GET /api/users - Get all users (admin only)
 export async function GET(request: NextRequest) {
   try {
-    // Check if user is admin
-    const adminCheck = await isAdmin(request);
-    if (!adminCheck) {
+    const token = await getToken({ req: request });
+    if (!token || token.role !== 'admin') {
       return new Response(
         JSON.stringify({ error: 'Unauthorized: Admin access required' }),
         { status: 403, headers: { 'Content-Type': 'application/json' } }
