@@ -15,7 +15,10 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (!user.id || !profile?.username) {
+      // Type assertion to access Discord profile properties
+      const discordProfile = profile as any;
+      
+      if (!user.id || !discordProfile?.username) {
         return false;
       }
 
@@ -30,7 +33,7 @@ export const authOptions: NextAuthOptions = {
           // User exists, update their information
           await query(
             'UPDATE users SET username = $1, avatar = $2, updated_at = NOW() WHERE discord_id = $3',
-            [profile.username, profile.image, user.id]
+            [discordProfile.username, discordProfile.image, user.id]
           );
         } else {
           // New user, insert into database
@@ -44,7 +47,7 @@ export const authOptions: NextAuthOptions = {
           
           await query(
             'INSERT INTO users (discord_id, username, avatar, role) VALUES ($1, $2, $3, $4)',
-            [user.id, profile.username, profile.image, role]
+            [user.id, discordProfile.username, discordProfile.image, role]
           );
 
           // If this was the first user, remove the default admin
@@ -70,7 +73,7 @@ export const authOptions: NextAuthOptions = {
       );
 
       if (result.rows.length > 0) {
-        session.user = {
+        (session.user as any) = {
           ...session.user,
           id: result.rows[0].id,
           discordId: result.rows[0].discord_id,
