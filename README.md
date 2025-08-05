@@ -37,42 +37,9 @@ TeamBalancer is an automated workload distribution platform that intelligently a
 
 ## Setup Instructions
 
-### Prerequisites
-- Node.js 18+
-- Docker and Docker Compose
-- PostgreSQL
-- Discord Developer Account
-- Groq API Key
-- Vercel Account
+For detailed setup instructions, please refer to [SETUP.md](SETUP.md).
 
-### Environment Variables
-Create a `.env` file based on `.env.example`:
-
-```env
-# Discord OAuth Configuration
-DISCORD_CLIENT_ID=your_discord_client_id
-DISCORD_CLIENT_SECRET=your_discord_client_secret
-DISCORD_REDIRECT_URI=http://localhost:3000/api/auth/callback
-DISCORD_BOT_TOKEN=your_discord_bot_token
-
-# Database Configuration
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/team_balancer
-
-# NextAuth Configuration
-NEXTAUTH_SECRET=your_nextauth_secret
-NEXTAUTH_URL=http://localhost:3000
-
-# Groq API Configuration
-GROQ_API_KEY=your_groq_api_key
-
-# Discord Webhook URL
-DISCORD_WEBHOOK_URL=your_discord_webhook_url
-
-# Vercel Deployment URL (for production)
-VERCEL_URL=your_vercel_url
-```
-
-### Installation
+### Quick Start
 
 1. Clone the repository:
    ```bash
@@ -85,12 +52,19 @@ VERCEL_URL=your_vercel_url
    npm install
    ```
 
-3. Set up the database:
+3. Create a `.env` file based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Configure the required environment variables (see [SETUP.md](SETUP.md) for details)
+
+5. Set up the database:
    ```bash
    docker-compose -f docker/docker-compose.yml up -d
    ```
 
-4. Run the development server:
+6. Run the development server:
    ```bash
    npm run dev
    ```
