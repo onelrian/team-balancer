@@ -115,9 +115,10 @@ The application will be available at `http://localhost:3000`
 ## 7. Initial Setup
 
 1. Open your browser and navigate to `http://localhost:3000`
-2. Click "Sign in with Discord"
-3. The first user to sign in will automatically become an admin
-4. After signing in, you'll be redirected to the dashboard
+2. You'll be automatically redirected to the sign in page
+3. Click "Sign in with Discord"
+4. The first user to sign in will automatically become an admin
+5. After signing in, you'll be redirected to the dashboard
 
 ## 8. Testing the System
 
