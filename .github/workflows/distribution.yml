@@ -1,0 +1,62 @@
+name: Workload Distribution
+
+on:
+  schedule:
+    # Run every 14 days at midnight UTC
+    - cron: '0 0 */14 * *'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  distribute-workload:
+    runs-on: ubuntu-latest
+    
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      VERCEL_URL: ${{ secrets.VERCEL_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup PostgreSQL
+        run: |
+          sudo apt-get install -y postgresql-client
+          # Connect to database and run any necessary migrations
+          # psql $DATABASE_URL -f ./docker/init.sql
+
+      - name: Generate workload distribution
+        run: |
+          # Run the distribution script
+          node ./scripts/generateDistribution.mjs
+        env:
+          NODE_ENV: production
+
+      - name: Deploy to Vercel
+        run: |
+          npm install -g vercel
+          vercel --token=$VERCEL_TOKEN --confirm --prod
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Send Discord notification
+        run: |
+          # Send notification to Discord
+          node ./scripts/sendDiscordNotification.mjs
+        env:
+          NODE_ENV: production
