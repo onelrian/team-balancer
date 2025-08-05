@@ -30,6 +30,16 @@ export default function AdminDashboard() {
         <h1>Admin Dashboard</h1>
         <p>Welcome, {user.username}! Manage your team and workload distribution.</p>
       </div>
+      
+      <div style={{ marginTop: '2rem' }}>
+        <h2>Admin Functions</h2>
+        <ul>
+          <li>Create and manage work portions</li>
+          <li>Manage user roles and permissions</li>
+          <li>Generate new assignments</li>
+          <li>View assignment history and analytics</li>
+        </ul>
+      </div>
     </div>
   );
 }
