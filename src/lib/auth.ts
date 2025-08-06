@@ -2,6 +2,20 @@ import NextAuth, { NextAuthOptions } from 'next-auth';
 import DiscordProvider from 'next-auth/providers/discord';
 import { query } from './db';
 
+interface SessionUser {
+  id: number;
+  discord_id: string;
+  username: string;
+  role: 'admin' | 'user';
+}
+
+interface DiscordProfile {
+  id: string;
+  username: string;
+  avatar: string;
+  image_url: string;
+}
+
 // Define the scopes we need from Discord
 const scopes = ['identify', 'email', 'guilds'].join(' ');
 
@@ -14,9 +28,9 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, profile }) {
       // Type assertion to access Discord profile properties
-      const discordProfile = profile as any;
+      const discordProfile = profile as DiscordProfile;
       
       if (!user.id || !discordProfile?.username) {
         return false;
@@ -65,7 +79,7 @@ export const authOptions: NextAuthOptions = {
         return false;
       }
     },
-    async session({ session, user, token }) {
+    async session({ session, token }) {
       // Get user details from database
       const result = await query(
         'SELECT id, discord_id, username, role FROM users WHERE discord_id = $1',
@@ -73,18 +87,16 @@ export const authOptions: NextAuthOptions = {
       );
 
       if (result.rows.length > 0) {
-        (session.user as any) = {
-          ...session.user,
-          id: result.rows[0].id,
-          discordId: result.rows[0].discord_id,
-          username: result.rows[0].username,
-          role: result.rows[0].role,
-        };
+        const sessionUser = session.user as SessionUser;
+        sessionUser.id = result.rows[0].id;
+        sessionUser.discord_id = result.rows[0].discord_id;
+        sessionUser.username = result.rows[0].username;
+        sessionUser.role = result.rows[0].role;
       }
 
       return session;
     },
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
       }
@@ -92,6 +104,10 @@ export const authOptions: NextAuthOptions = {
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   pages: {
     signIn: '/auth/signin',
     error: '/auth/error',
