@@ -3,7 +3,14 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 
-interface User {
+interface SessionUser {
+  id: number;
+  discordId: string;
+  username: string;
+  role: 'admin' | 'user';
+}
+
+interface AuthUser {
   id: number;
   discordId: string;
   username: string;
@@ -11,7 +18,7 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
   loading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -26,26 +33,33 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('AuthContext useEffect', { status, session });
     if (status === 'loading') {
+      console.log('Setting loading to true');
       setLoading(true);
       return;
     }
 
+    console.log('Session status is not loading', { status });
     if (session?.user) {
+      console.log('Setting user from session', session.user);
+      const sessionUser = session.user as SessionUser;
       setUser({
-        id: session.user.id,
-        discordId: session.user.discordId,
-        username: session.user.username,
-        role: session.user.role,
+        id: sessionUser.id,
+        discordId: sessionUser.discordId,
+        username: sessionUser.username,
+        role: sessionUser.role,
       });
     } else {
+      console.log('No user in session, setting user to null');
       setUser(null);
     }
     
+    console.log('Setting loading to false');
     setLoading(false);
   }, [session, status]);
 
