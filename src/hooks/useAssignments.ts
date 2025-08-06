@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { WorkAssignment } from '@/types/work';
-import { User } from '@/types/user';
-import { WorkPortion } from '@/types/work';
+
 
 interface AssignmentData {
   cycleDate: string;
@@ -9,10 +8,7 @@ interface AssignmentData {
   assignments: WorkAssignment[];
 }
 
-interface ExtendedAssignment extends WorkAssignment {
-  user?: User;
-  workPortion?: WorkPortion;
-}
+
 
 export function useAssignments() {
   const [assignmentData, setAssignmentData] = useState<AssignmentData | null>(null);
@@ -21,19 +17,24 @@ export function useAssignments() {
 
   useEffect(() => {
     const fetchAssignments = async () => {
+      console.log('Fetching assignments');
       try {
         setLoading(true);
         const response = await fetch('/api/assignments/current');
+        console.log('Assignment API response', response.status, response.ok);
         
         if (!response.ok) {
           throw new Error('Failed to fetch assignments');
         }
         
         const data: AssignmentData = await response.json();
+        console.log('Assignment data received', data);
         setAssignmentData(data);
       } catch (err) {
+        console.error('Error fetching assignments', err);
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
+        console.log('Setting loading to false');
         setLoading(false);
       }
     };
