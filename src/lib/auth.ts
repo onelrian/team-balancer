@@ -4,7 +4,7 @@ import { query } from './db';
 
 interface SessionUser {
   id: number;
-  discord_id: string;
+  discordId: string;
   username: string;
   role: 'admin' | 'user';
 }
@@ -13,7 +13,7 @@ interface DiscordProfile {
   id: string;
   username: string;
   avatar: string;
-  image_url: string;
+  image: string;
 }
 
 // Define the scopes we need from Discord
@@ -50,25 +50,23 @@ export const authOptions: NextAuthOptions = {
             [discordProfile.username, discordProfile.image, user.id]
           );
         } else {
-          // New user, insert into database
-          // Check if this is the first user (default admin)
+          // New user, check if default admin exists
           const adminCheck = await query(
             'SELECT id FROM users WHERE discord_id = $1',
             ['default_admin']
           );
 
-          const role = adminCheck.rows.length > 0 ? 'user' : 'admin';
-          
-          await query(
-            'INSERT INTO users (discord_id, username, avatar, role) VALUES ($1, $2, $3, $4)',
-            [user.id, discordProfile.username, discordProfile.image, role]
-          );
-
-          // If this was the first user, remove the default admin
-          if (role === 'admin') {
+          if (adminCheck.rows.length > 0) {
+            // Default admin exists, update it with first real user's information
             await query(
-              'DELETE FROM users WHERE discord_id = $1',
-              ['default_admin']
+              'UPDATE users SET discord_id = $1, username = $2, avatar = $3, role = $4, updated_at = NOW() WHERE discord_id = $5',
+              [user.id, discordProfile.username, discordProfile.image, 'admin', 'default_admin']
+            );
+          } else {
+            // No default admin exists, insert new user with 'user' role
+            await query(
+              'INSERT INTO users (discord_id, username, avatar, role) VALUES ($1, $2, $3, $4)',
+              [user.id, discordProfile.username, discordProfile.image, 'user']
             );
           }
         }
@@ -89,7 +87,7 @@ export const authOptions: NextAuthOptions = {
       if (result.rows.length > 0) {
         const sessionUser = session.user as SessionUser;
         sessionUser.id = result.rows[0].id;
-        sessionUser.discord_id = result.rows[0].discord_id;
+        sessionUser.discordId = result.rows[0].discord_id;
         sessionUser.username = result.rows[0].username;
         sessionUser.role = result.rows[0].role;
       }
