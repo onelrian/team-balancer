@@ -3,7 +3,7 @@ import { getToken } from 'next-auth/jwt';
 import { WorkService } from '@/services/workService';
 
 // GET /api/work-portions - Get all work portions
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const workPortions = await WorkService.getAllWorkPortions();
     
