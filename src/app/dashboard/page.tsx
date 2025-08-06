@@ -7,7 +7,10 @@ export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const { assignmentData, loading: assignmentsLoading } = useAssignments();
 
+  console.log('Dashboard render', { authLoading, assignmentsLoading, user, assignmentData });
+
   if (authLoading || assignmentsLoading) {
+    console.log('Showing loading spinner');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
