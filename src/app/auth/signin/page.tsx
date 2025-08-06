@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { getProviders, signIn, useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SignIn() {
@@ -14,14 +14,21 @@ export default function SignIn() {
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   // If user is already signed in, redirect to dashboard
-  if (session) {
-    router.push(callbackUrl);
-  }
+  useEffect(() => {
+    if (session) {
+      router.push(callbackUrl);
+    }
+  }, [session, router, callbackUrl]);
 
   const handleDiscordSignIn = async () => {
     setLoading(true);
     try {
-      await signIn('discord', { callbackUrl });
+      const result = await signIn('discord', { callbackUrl, redirect: false });
+      if (result?.error) {
+        console.error('Sign in error:', result.error);
+        setLoading(false);
+      }
+      // If sign in is successful, NextAuth will handle the redirect
     } catch (error) {
       console.error('Sign in error:', error);
       setLoading(false);
