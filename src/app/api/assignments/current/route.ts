@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
+
 import { AssignmentService } from '@/services/assignmentService';
 
 // GET /api/assignments/current - Get current assignments
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Get current cycle date
     const cycleDate = AssignmentService.getCurrentCycleDate();
